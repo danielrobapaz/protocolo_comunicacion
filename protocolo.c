@@ -8,8 +8,21 @@
 
 int n_nodes = 2;
 
+void write_pipe(int n_pipe, int *value_write) {
+    if (write(n_pipe, value_write, sizeof(int*))==-1) {
+        printf("error escribiendo al pipe\n");
+        exit(1);
+    }
+    close(n_pipe);
+}
 
-void read_pipe()
+void read_pipe(int n_pipe, int *value_read) {
+    if (read(n_pipe, value_read, sizeof(int*))==-1) {
+        printf("error leyendo el pipe\n");
+        exit(1);
+    }
+}
+
 int main() {
     int pipes[n_nodes][2], ch_pid, my_node;
 
@@ -28,17 +41,10 @@ int main() {
 
         if (ch_pid) {
             /* caso del proceso padre*/
-            if (write(pipes[i][WRITE_END], &i, sizeof(int*))==-1) {
-                printf("error escribiendo al pipe\n");
-                exit(1);
-            }
-            close(pipes[i][WRITE_END]);
+            write_pipe(pipes[i][WRITE_END], &i);
         } else {
             /* caso del proceso hijo*/
-            if (read(pipes[i][READ_END], &my_node, sizeof(int*))==-1) {
-                printf("error leyendo el pipe\n");
-                exit(1);
-            }
+            read_pipe(pipes[i][READ_END], &my_node);
             break; /* se corta del ciclo para evitar generar hijos de mas*/
         }
     }
