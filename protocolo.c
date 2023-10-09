@@ -24,7 +24,7 @@ void read_pipe(int n_pipe, int *value_read) {
 }
 
 int main() {
-    int pipes[n_nodes][2], ch_pid, my_node;
+    int pipes[n_nodes][2], ch_pid, my_node, liters, msj;
 
     my_node = -1;
     /* inicializamos los pipes*/
@@ -45,17 +45,34 @@ int main() {
         } else {
             /* caso del proceso hijo*/
             read_pipe(pipes[i][READ_END], &my_node);
+            liters = 0;
             break; /* se corta del ciclo para evitar generar hijos de mas*/
         }
     }
 
-    if (my_node==1){
-        printf("soy el nodo 1");
+    if (my_node == -1) { /* padre*/
+        read_pipe(pipes[0][READ_END], &msj);
+        write_pipe(pipes[1][WRITE_END], &msj);
     }
 
 
-    if (my_node==0) {
-        printf("soy el nodo 2");
+    if (my_node==0) { /* JG */
+        /* llenar(JG, 5)*/
+        liters = 5;
+
+        /* anadir (JG, jp, 3)*/
+        msj = 3;
+        liters -= msj;
+        write_pipe(pipes[my_node][WRITE_END], &msj);
+        
+        printf("JG %d\n", liters);
+    }
+
+
+    if (my_node==1){ /* jp */
+        read_pipe(pipes[my_node][READ_END], &msj);
+        liters += msj;
+        printf("jp %d\n", liters);
     }
 
     while (wait(NULL)>0) {
