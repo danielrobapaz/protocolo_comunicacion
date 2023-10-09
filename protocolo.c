@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 #define READ_END 0
 #define WRITE_END 1
 
+sem_t parent_JG, parent_jp;
 int n_nodes = 2;
 
 
@@ -31,6 +33,10 @@ int main() {
         }
     }
 
+    /* inicializamos el mutex lock */
+    sem_init(&parent_JG, 1, 2);
+    sem_init(&parent_jp, 1, 2);
+
     for (int i=0; i<n_nodes; i++) {
         /* creamos a los hijos */
         ch_pid = fork();
@@ -42,39 +48,20 @@ int main() {
         } else {
             /* caso del proceso hijo*/
             read_from_parent_child(parent_to_child[i], &i);
-            
             break; /* se corta del ciclo para evitar generar hijos de mas*/
         }
     }
     
-    if (my_node == -1) {
-        close(child_to_parent[0][WRITE_END]);
-        if (read(child_to_parent[0][READ_END], &msj, sizeof(int*))==-1){
-            printf("no se que poner\n");
-            exit(1);
-        }
-        close(child_to_parent[0][READ_END]);
-
-        printf("msj = %d", msj);
-
-        close(parent_to_child[1][READ_END]);
-        if (write(parent_to_child[1][WRITE_END], &msj, sizeof(int*))==-1){
-            printf("hasta cuando papa dios\n");
-            exit(1);
-        }
-        close(parent_to_child[1][WRITE_END]);
-        //read_pipe(pipes[0][READ_END], &msj);
-        //write_pipe(pipes[1][WRITE_END], &msj);
-    }
-
-
     if (my_node==0) { //JG
         // llenar(JG, 5)
         liters_JG = 5;
+        
 
+        // anadir(JG, jp, 3)
         msj = 3;
         liters_JG -= msj;
         
+        sem_wait(&parent_JG);
         close(parent_to_child[my_node][READ_END]);
         close(child_to_parent[my_node][READ_END]);
         if (write(child_to_parent[my_node][WRITE_END], &msj, sizeof(int*))==-1){
@@ -82,21 +69,43 @@ int main() {
             exit(1);
         }
         close(child_to_parent[my_node][WRITE_END]);
-
-        //write_pipe(pipes[my_node][WRITE_END], &msj);
+        sem_post(&parent_JG);
         
         printf("JG %d\n", liters_JG);
     }
+    sem_post(&parent_JG);
+
+    sem_wait(&parent_JG);
+    if (my_node == -1) {
+        sem_wait(&parent_JG);
+        read_from_child_parent(child_to_parent[JG], &msj);
+        sem_post(&parent_JG);
+
+        printf("msj_parent = %d", msj);
+
+        sem_wait(&parent_jp);
+        close(parent_to_child[jp][READ_END]);
+        if (write(parent_to_child[jp][WRITE_END], &msj, sizeof(int*))==-1){
+            printf("hasta cuando papa dios\n");
+            exit(1);
+        }
+        close(parent_to_child[jp][WRITE_END]);
+        sem_post(&parent_jp);
+    }
+
+
 
     
-    if (my_node==1){
+    if (my_node==1){ //jp
         liters_jp = 0;
+        sem_wait(&parent_jp);
         close(parent_to_child[my_node][WRITE_END]);
         if(read(parent_to_child[my_node][READ_END], &msj, sizeof(int*))==-1){
             printf("ausilio\n");
             exit(1);
         }
         close(parent_to_child[my_node][READ_END]);
+        sem_post(&parent_jp);
         //read_pipe(pipes[my_node][READ_END], &msj);
         liters_jp += msj;
     }
@@ -105,6 +114,10 @@ int main() {
         ;
     }
 
+    
+    sem_destroy(&parent_JG);
+    sem_destroy(&parent_jp);
+    
     return 0;
 }
 
@@ -125,4 +138,13 @@ void read_from_parent_child(int parent_pipe[], int *value){
     }
 
     close(parent_pipe[READ_END]);
+}
+
+void read_from_child_parent(int child_pipe[], int *value) {
+    close(child_pipe[WRITE_END]);
+    if (read(child_pipe[READ_END], &value, sizeof(int*))==-1){
+        printf("error leyendo pipe\n");
+        exit(1);
+    }
+    close(child_pipe[READ_END]);
 }
