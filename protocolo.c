@@ -10,7 +10,7 @@
 
 void write_from_parent_child(int parent_pipe[], int *value);
 void read_from_parent_child(int parent_pipe[], int *value);
-void write_from_child_parent(int child_pipe[], int parent_pipe[], int *value);
+void write_from_child_parent(int child_pipe[], int *value);
 void read_from_child_parent(int child_pipe[], int *value);
 
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
         msj = 0;
 
         // listo_para_recibir()
-        write_from_child_parent(child_to_parent, parent_to_child, &msj);
+        write_from_child_parent(child_to_parent, &msj);
 
         // transvasar(JG, jp)
         read_from_child_parent(parent_to_child, &msj);
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 
         // listo_para_recibir()
         msj = 0;
-        write_from_child_parent(child_to_parent, parent_to_child, &msj);
+        write_from_child_parent(child_to_parent, &msj);
 
         // anadir(JG, jp, 1)
         read_from_parent_child(parent_to_child, &msj);
@@ -137,7 +137,7 @@ void read_from_parent_child(int parent_pipe[], int *value) {
     }
 }
 
-void write_from_child_parent(int child_pipe[], int parent_pipe[], int *value) {
+void write_from_child_parent(int child_pipe[], int *value) {
     if (write(child_pipe[WRITE_END], value, size_of) == -1) {
         printf("error escribiendo pipe child_to_parent\n");
         exit(1);
@@ -145,8 +145,8 @@ void write_from_child_parent(int child_pipe[], int parent_pipe[], int *value) {
 }
 
 void read_from_child_parent(int child_pipe[], int *value) {
-        if (read(child_pipe[READ_END], value, size_of) == -1){
-            printf("error leyendo pipe child_to_parent\n");
-            exit(1);
-        }
+    if (read(child_pipe[READ_END], value, size_of) == -1){
+        printf("error leyendo pipe child_to_parent\n");
+        exit(1);
+    }
 }
