@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
         // anadir(JG, jp, 3)
         read_from_parent_child(parent_to_child, &msj);
         liters_jp += msj;
-        printf("anadir(JG, jp, 3), Estado jp: %d\n-------------------------\n", liters_jp);
+        printf("anadir [recibir] (JG, jp, 3), Estado jp: %d\n-------------------------\n", liters_jp);
 
         // vaciar(jp)
         liters_jp = 0;
@@ -61,12 +61,16 @@ int main(int argc, char *argv[]) {
         // transvasar(JG, jp)
         read_from_child_parent(parent_to_child, &msj);
         liters_jp += msj;
-        printf("transvasar(JG, jp), Estado jp: %d\n-------------------------\n", liters_jp);
+        printf("transvasar [recibir] (JG, jp), Estado jp: %d\n-------------------------\n", liters_jp);
+
+        // listo_para_recibir()
+        msj = 0;
+        write_from_child_parent(child_to_parent, parent_to_child, &msj);
 
         // anadir(JG, jp, 1)
         read_from_parent_child(parent_to_child, &msj);
         liters_jp += msj;
-        printf("anadir(JG, jp, 1), Estado jp: %d\n-------------------------\n", liters_jp);
+        printf("anadir [recibir] (JG, jp, 1), Estado jp: %d\n-------------------------\n", liters_jp);
 
     } else { // JG
         // llenar(JG, 5)
@@ -89,9 +93,13 @@ int main(int argc, char *argv[]) {
         printf("transvasar(JG, jp), Estado JG: %d\n-------------------------\n", liters_JG);
         write_from_parent_child(parent_to_child, &msj);
 
+        // listo_para_recibir()
+        read_from_child_parent(child_to_parent, &msj);
+        liters_JG += msj;
+
         // llenar(JG, 5)
-        printf("llenar(JG, 5), Estado JG: %d\n-------------------------\n", liters_JG);
         liters_JG = 5;
+        printf("llenar(JG, 5), Estado JG: %d\n-------------------------\n", liters_JG);
 
         // anadir(JG, jp, 1)
         msj = 1;
