@@ -22,17 +22,20 @@ int main(int argc, char *argv[]) {
         perror("socket");
         exit(1);
     }
+
     /* Se establece la estructura my_addr para luego llamar a bind() */
     my_addr.sin_family = AF_INET; /* usa host byte order */
     my_addr.sin_port = htons(SERVER_PORT); /* usa network byte order */
     my_addr.sin_addr.s_addr = INADDR_ANY; /* escuchamos en todas las IPs */
     bzero(&(my_addr.sin_zero), 8); /* rellena con ceros el resto de la estructura */
+
     /* Se le da un nombre al socket (se lo asocia al puerto e IPs) */
     printf("Asignado direccion al socket ....\n");
     if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
         perror("bind");
         exit(2);
     }
+
     /* Se reciben los datos (directamente, UDP no necesita conexión) */
     addr_len = sizeof(struct sockaddr);
     printf("Esperando datos ....\n");
@@ -41,11 +44,13 @@ int main(int argc, char *argv[]) {
         perror("recvfrom");
         exit(3);
     }
+
     /* Se visualiza lo recibido */
     printf("paquete proveniente de : %s\n",inet_ntoa(their_addr.sin_addr));
     printf("longitud del paquete en bytes: %d\n",numbytes);
     buf[numbytes] = '\0';
     printf("el paquete contiene: %s\n", buf);
+    
     /* cerramos descriptor del socket */
     close(sockfd);
     exit(0);

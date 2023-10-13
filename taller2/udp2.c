@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #define SERVER_PORT 4321
 #define BUFFER_LEN 1024
+
 int main(int argc, char *argv[]) {
     int sockfd; /* descriptor a usar con el socket */
     struct sockaddr_in their_addr; /* almacenara la direccion IP y numero de puerto del servidor */
@@ -46,4 +47,4 @@ int main(int argc, char *argv[]) {
     /* cierro socket */
     close(sockfd);
     exit (0);
-    }
+}
