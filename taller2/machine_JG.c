@@ -9,12 +9,15 @@
 #define SERVER_PORT 4321
 #define BUFFER_LEN 1024
 
+void send_state(char *host, char *msg);
 
 int main(int argc, char *argv[]){
 
-    printf("Inicio de maquina 1 - JG");
+    printf("Inicio de maquina 1 - JG\n");
 
     int liters_JG, msg;
+    char host_name[] = "localhost";
+    unsigned char msg_c;
 
     // Initial state
     liters_JG = 0;
@@ -27,16 +30,17 @@ int main(int argc, char *argv[]){
 
     // anadir(JG,jp,3)
     msg = 3;
+    msg_c = (unsigned char)msg;
     liters_JG -= msg;
     printf("anadir(JG, jp, 3), Estado JG: %d\n-------------------------\n", liters_JG);
-    send('localhost', &msg);
+    send_state(*host_name, &msg_c);
 
 
     return 0;
 
 }
 
-void recieve(int *value) {
+void recieve_state(int *value) {
 
     int sockfd; /* descriptor para el socket */
     struct sockaddr_in my_addr; /* direccion IP y numero de puerto local */
@@ -83,30 +87,34 @@ void recieve(int *value) {
     close(sockfd);
 }
 
-void send(char *host, char *msg){
+void send_state(char *host, char *msg){
     int sockfd; /* descriptor a usar con el socket */
     struct sockaddr_in their_addr; /* almacenara la direccion IP y numero de puerto del servidor */
     struct hostent *he; /* para obtener nombre del host */
     int numbytes; /* conteo de bytes a escribir */
- 
+    
+    printf("hola");
     /* convertimos el hostname a su direccion IP */
     if ((he=gethostbyname(host)) == NULL) {
         perror("gethostbyname");
         exit(1);
     }
 
+    printf("hola2");
     /* Creamos el socket */
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
         perror("socket");
         exit(2);
     }
 
+    printf("hola3");
     /* a donde mandar */
     their_addr.sin_family = AF_INET; /* usa host byte order */
     their_addr.sin_port = htons(SERVER_PORT); /* usa network byte order */
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
     bzero(&(their_addr.sin_zero), 8); /* pone en cero el resto */
     
+    printf("hola4");
     /* enviamos el mensaje */
     if ((numbytes=sendto(sockfd,msg,strlen(msg),0,(struct sockaddr *)&their_addr,
     sizeof(struct sockaddr))) == -1) {
@@ -115,6 +123,7 @@ void send(char *host, char *msg){
     }
     printf("enviados %d bytes hacia %s\n",numbytes,inet_ntoa(their_addr.sin_addr));
 
+    printf("hola5");
     /* cierro socket */
     close(sockfd);
 }
