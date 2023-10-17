@@ -6,30 +6,63 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#define SERVER_PORT 4321
+#define SERVER_PORT1 4321
+#define SERVER_PORT2 8080
 #define BUFFER_LEN 1024
+
+void send_state(char *host, char *msg);
+void recieve_state(int *value);
 
 int main(int argc, char *argv[]){
 
-    printf("Inicio de maquina 1 - JP");
+    printf("\nInicio de maquina 1 - JP\n\n");
 
     int liters_jp, msg;
+    char *msg_c = malloc(sizeof(char)); 
+    char host_name[] = "localhost";
 
     // Initial state
     liters_jp = 0;
     msg = 0;
+    
 
     // Start Comunication
     // anadir [recibir] (JG,jp,3)
-    recieve(&msg);
+    recieve_state(&msg);
     liters_jp += msg;
-    printf("anadir [recibir] (JG, jp, 3), Estado jp: %d\n-------------------------\n", liters_jp);
+    printf("\n-------------------------\nanadir [recibir] (JG, jp, 3), Estado jp: %d\n-------------------------\n", liters_jp);
+    
+    // vaciar(jp)
+    liters_jp = 0;
+    msg = 0;
+    *msg_c = msg + '0';
+
+    // Listo para recibir
+    send_state(host_name, msg_c);
+    
+    // transvasar(JG, jp)
+    recieve_state(&msg);
+    liters_jp += msg;
+    printf("\n-------------------------\ntransvasar(JG, jp), Estado jp: %d\n-------------------------\n", liters_jp);
+
+    msg = 0;
+    *msg_c = msg + '0';
+    
+    // Listo para recibir
+    send_state(host_name, msg_c);
+
+    // anadir [recibir](JG, jp, 1)
+    recieve_state(&msg);
+    liters_jp += msg;
+    printf("\n-------------------------\nanadir [recibir] (JG, jp, 1), Estado jp: %d\n-------------------------\n", liters_jp);
+
+    printf("Estado final: %d\n",liters_jp);
 
     return 0;
 
 }
 
-void recieve(int *value) {
+void recieve_state(int *value) {
 
     int sockfd; /* descriptor para el socket */
     struct sockaddr_in my_addr; /* direccion IP y numero de puerto local */
@@ -47,7 +80,7 @@ void recieve(int *value) {
 
     /* Se establece la estructura my_addr para luego llamar a bind() */
     my_addr.sin_family = AF_INET; /* usa host byte order */
-    my_addr.sin_port = htons(SERVER_PORT); /* usa network byte order */
+    my_addr.sin_port = htons(SERVER_PORT1); /* usa network byte order */
     my_addr.sin_addr.s_addr = INADDR_ANY; /* escuchamos en todas las IPs */
     bzero(&(my_addr.sin_zero), 8); /* rellena con ceros el resto de la estructura */
     /* Se le da un nombre al socket (se lo asocia al puerto e IPs) */
@@ -71,18 +104,19 @@ void recieve(int *value) {
     printf("longitud del paquete en bytes: %d\n",numbytes);
     buf[numbytes] = '\0';
     printf("el paquete contiene: %s\n", buf);
+    
+    *value = atoi(buf); 
 
-    value = atoi(buf);
     /* cerramos descriptor del socket */
     close(sockfd);
 }
 
-void send(char *host,char *msg){
+void send_state(char host[], char *msg){
     int sockfd; /* descriptor a usar con el socket */
     struct sockaddr_in their_addr; /* almacenara la direccion IP y numero de puerto del servidor */
     struct hostent *he; /* para obtener nombre del host */
     int numbytes; /* conteo de bytes a escribir */
- 
+    
     /* convertimos el hostname a su direccion IP */
     if ((he=gethostbyname(host)) == NULL) {
         perror("gethostbyname");
@@ -97,7 +131,7 @@ void send(char *host,char *msg){
 
     /* a donde mandar */
     their_addr.sin_family = AF_INET; /* usa host byte order */
-    their_addr.sin_port = htons(SERVER_PORT); /* usa network byte order */
+    their_addr.sin_port = htons(SERVER_PORT2); /* usa network byte order */
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
     bzero(&(their_addr.sin_zero), 8); /* pone en cero el resto */
     
@@ -111,5 +145,5 @@ void send(char *host,char *msg){
 
     /* cierro socket */
     close(sockfd);
-
 }
+

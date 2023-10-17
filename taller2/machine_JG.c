@@ -6,18 +6,20 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#define SERVER_PORT 4321
+#define SERVER_PORT1 4321
+#define SERVER_PORT2 8080
 #define BUFFER_LEN 1024
 
-void send_state(char *host, char *msg);
+void send_state(char host[], char *msg);
 
 int main(int argc, char *argv[]){
 
-    printf("Inicio de maquina 1 - JG\n");
+    printf("\nInicio de maquina 1 - JG\n");
 
     int liters_JG, msg;
     char host_name[] = "localhost";
-    unsigned char msg_c;
+    char *msg_c = malloc(sizeof(char)); 
+
 
     // Initial state
     liters_JG = 0;
@@ -26,18 +28,46 @@ int main(int argc, char *argv[]){
     // Start Comunication
     // llenar(JG,5)
     liters_JG = 5;
-    printf("llenar(JG, 5), Estado JG: %d\n-------------------------\n", liters_JG);
+    printf("\n-------------------------\nllenar(JG, 5), Estado JG: %d\n-------------------------\n", liters_JG);
 
     // anadir(JG,jp,3)
     msg = 3;
-    msg_c = (unsigned char)msg;
+    *msg_c = msg + '0';
+
     liters_JG -= msg;
     printf("anadir(JG, jp, 3), Estado JG: %d\n-------------------------\n", liters_JG);
-    send_state(*host_name, &msg_c);
+    send_state(host_name, msg_c);
 
+    // Confirmacion para continuar
+    recieve_state(&msg);
+    liters_JG += msg;
+
+    // transvasar(JG, jp)
+    msg = liters_JG;
+    liters_JG -= msg;
+    printf("\n-------------------------\ntransvasar(JG, jp), Estado JG: %d\n-------------------------\n", liters_JG);
+    *msg_c = msg + '0';
+    send_state(host_name, msg_c);
+
+
+    // Confirmacion para continuar
+    recieve_state(&msg);
+    liters_JG += msg;
+
+    // llenar(JG, 5)
+    liters_JG = 5;
+    printf("llenar(JG, 5), Estado JG: %d\n-------------------------\n", liters_JG);
+
+    // anadir(JG, jp, 1)
+    msg = 1;
+    liters_JG -= msg;
+    *msg_c = msg + '0';
+    printf("anadir(JG, jp, 1), Estado JG: %d\n-------------------------\n", liters_JG);
+    send_state(host_name, msg_c);
+
+    printf("\n-------------------------\nEstado final: %d\n",liters_JG);
 
     return 0;
-
 }
 
 void recieve_state(int *value) {
@@ -58,7 +88,7 @@ void recieve_state(int *value) {
 
     /* Se establece la estructura my_addr para luego llamar a bind() */
     my_addr.sin_family = AF_INET; /* usa host byte order */
-    my_addr.sin_port = htons(SERVER_PORT); /* usa network byte order */
+    my_addr.sin_port = htons(SERVER_PORT2); /* usa network byte order */
     my_addr.sin_addr.s_addr = INADDR_ANY; /* escuchamos en todas las IPs */
     bzero(&(my_addr.sin_zero), 8); /* rellena con ceros el resto de la estructura */
     /* Se le da un nombre al socket (se lo asocia al puerto e IPs) */
@@ -83,38 +113,36 @@ void recieve_state(int *value) {
     buf[numbytes] = '\0';
     printf("el paquete contiene: %s\n", buf);
 
+    *value = atoi(buf); 
+
     /* cerramos descriptor del socket */
     close(sockfd);
 }
 
-void send_state(char *host, char *msg){
+void send_state(char host[], char *msg){
     int sockfd; /* descriptor a usar con el socket */
     struct sockaddr_in their_addr; /* almacenara la direccion IP y numero de puerto del servidor */
     struct hostent *he; /* para obtener nombre del host */
     int numbytes; /* conteo de bytes a escribir */
     
-    printf("hola");
     /* convertimos el hostname a su direccion IP */
     if ((he=gethostbyname(host)) == NULL) {
         perror("gethostbyname");
         exit(1);
     }
 
-    printf("hola2");
     /* Creamos el socket */
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
         perror("socket");
         exit(2);
     }
 
-    printf("hola3");
     /* a donde mandar */
     their_addr.sin_family = AF_INET; /* usa host byte order */
-    their_addr.sin_port = htons(SERVER_PORT); /* usa network byte order */
+    their_addr.sin_port = htons(SERVER_PORT1); /* usa network byte order */
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
     bzero(&(their_addr.sin_zero), 8); /* pone en cero el resto */
     
-    printf("hola4");
     /* enviamos el mensaje */
     if ((numbytes=sendto(sockfd,msg,strlen(msg),0,(struct sockaddr *)&their_addr,
     sizeof(struct sockaddr))) == -1) {
@@ -122,8 +150,6 @@ void send_state(char *host, char *msg){
         exit(2);
     }
     printf("enviados %d bytes hacia %s\n",numbytes,inet_ntoa(their_addr.sin_addr));
-
-    printf("hola5");
     /* cierro socket */
     close(sockfd);
 }
