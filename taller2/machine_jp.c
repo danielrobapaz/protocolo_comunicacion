@@ -15,7 +15,7 @@ void recieve_state(int *value);
 
 int main(int argc, char *argv[]){
 
-    printf("\nInicio de maquina 1 - JP\n\n");
+    printf("\nInicio de maquina JP\n\n");
 
     int liters_jp, msg;
     char *msg_c = malloc(sizeof(char)); 
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
     // anadir [recibir] (JG,jp,3)
     recieve_state(&msg);
     liters_jp += msg;
-    printf("\n-------------------------\nanadir [recibir] (JG, jp, 3), Estado jp: %d\n-------------------------\n", liters_jp);
+    printf("\n-------------------------\nanadir [recibir] (JG, jp, 3), Estado jp: %d\n-------------------------\n\n", liters_jp);
     
     // vaciar(jp)
     liters_jp = 0;
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
     // transvasar(JG, jp)
     recieve_state(&msg);
     liters_jp += msg;
-    printf("\n-------------------------\ntransvasar(JG, jp), Estado jp: %d\n-------------------------\n", liters_jp);
+    printf("\n-------------------------\ntransvasar(JG, jp), Estado jp: %d\n-------------------------\n\n", liters_jp);
 
     msg = 0;
     *msg_c = msg + '0';
@@ -84,7 +84,6 @@ void recieve_state(int *value) {
     my_addr.sin_addr.s_addr = INADDR_ANY; /* escuchamos en todas las IPs */
     bzero(&(my_addr.sin_zero), 8); /* rellena con ceros el resto de la estructura */
     /* Se le da un nombre al socket (se lo asocia al puerto e IPs) */
-    printf("Asignado direccion al socket ....\n");
     if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
         perror("bind");
         exit(2);
@@ -100,8 +99,7 @@ void recieve_state(int *value) {
     }
 
     /* Se visualiza lo recibido */
-    printf("paquete proveniente de : %s\n",inet_ntoa(their_addr.sin_addr));
-    printf("longitud del paquete en bytes: %d\n",numbytes);
+    printf("paquete proveniente de JG: %s\n",inet_ntoa(their_addr.sin_addr));
     buf[numbytes] = '\0';
     printf("el paquete contiene: %s\n", buf);
     
@@ -141,7 +139,7 @@ void send_state(char host[], char *msg){
         perror("sendto");
         exit(2);
     }
-    printf("enviados %d bytes hacia %s\n",numbytes,inet_ntoa(their_addr.sin_addr));
+    printf("enviados %d bytes hacia JG: %s\n\n",numbytes,inet_ntoa(their_addr.sin_addr));
 
     /* cierro socket */
     close(sockfd);

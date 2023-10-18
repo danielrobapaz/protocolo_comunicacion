@@ -14,7 +14,7 @@ void send_state(char host[], char *msg);
 
 int main(int argc, char *argv[]){
 
-    printf("\nInicio de maquina 1 - JG\n");
+    printf("\nInicio de maquina JG\n");
 
     int liters_JG, msg;
     char host_name[] = "localhost";
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
     *msg_c = msg + '0';
 
     liters_JG -= msg;
-    printf("anadir(JG, jp, 3), Estado JG: %d\n-------------------------\n", liters_JG);
+    printf("anadir(JG, jp, 3), Estado JG: %d\n-------------------------\n\n", liters_JG);
     send_state(host_name, msg_c);
 
     // Confirmacion para continuar
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
     // transvasar(JG, jp)
     msg = liters_JG;
     liters_JG -= msg;
-    printf("\n-------------------------\ntransvasar(JG, jp), Estado JG: %d\n-------------------------\n", liters_JG);
+    printf("\n-------------------------\ntransvasar(JG, jp), Estado JG: %d\n-------------------------\n\n", liters_JG);
     *msg_c = msg + '0';
     send_state(host_name, msg_c);
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
 
     // llenar(JG, 5)
     liters_JG = 5;
-    printf("llenar(JG, 5), Estado JG: %d\n-------------------------\n", liters_JG);
+    printf("\n-------------------------\nllenar(JG, 5), Estado JG: %d\n-------------------------\n", liters_JG);
 
     // anadir(JG, jp, 1)
     msg = 1;
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
     printf("anadir(JG, jp, 1), Estado JG: %d\n-------------------------\n", liters_JG);
     send_state(host_name, msg_c);
 
-    printf("\n-------------------------\nEstado final: %d\n",liters_JG);
+    printf("-------------------------\nEstado final: %d\n",liters_JG);
 
     return 0;
 }
@@ -92,7 +92,6 @@ void recieve_state(int *value) {
     my_addr.sin_addr.s_addr = INADDR_ANY; /* escuchamos en todas las IPs */
     bzero(&(my_addr.sin_zero), 8); /* rellena con ceros el resto de la estructura */
     /* Se le da un nombre al socket (se lo asocia al puerto e IPs) */
-    printf("Asignado direccion al socket ....\n");
     if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
         perror("bind");
         exit(2);
@@ -109,7 +108,6 @@ void recieve_state(int *value) {
 
     /* Se visualiza lo recibido */
     printf("paquete proveniente de : %s\n",inet_ntoa(their_addr.sin_addr));
-    printf("longitud del paquete en bytes: %d\n",numbytes);
     buf[numbytes] = '\0';
     printf("el paquete contiene: %s\n", buf);
 
